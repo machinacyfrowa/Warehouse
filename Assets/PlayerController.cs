@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.HID;
 using UnityEngine.XR;
@@ -10,21 +11,21 @@ public class PlayerController : MonoBehaviour
 {
     Vector2 movementVector;
     Vector3 rayOrgin;
-    Transform aboveHead;
+    GameObject aboveHead;
     // Start is called before the first frame update
     void Start()
     {
         movementVector = Vector2.zero;
-        aboveHead = transform.Find("aboveHead");
+        aboveHead = transform.Find("aboveHead").gameObject;
     }
     // Update is called once per frame
     void Update()
     {
         //Debug.Log("Wspó³rzêdne gracza: " + transform.position.ToString());
         //Debug.Log("Wspó³rzêdne przed nami: " + getPositionInFront().ToString());
-        GameObject inFront = getObjectInFront();
-        if(inFront != null)
-            Debug.Log("Przed nami znajduje siê: " + inFront.ToString());
+        //GameObject inFront = getObjectInFront();
+        //if(inFront != null)
+            //Debug.Log("Przed nami znajduje siê: " + inFront.ToString());
     }
     void FixedUpdate()
     {
@@ -114,9 +115,30 @@ public class PlayerController : MonoBehaviour
     }
     void PickUpCrate(GameObject crate)
     {
-        crate.transform.position = Vector3.zero;
-        crate.transform.SetParent(aboveHead, false);
         
+        if(crate.transform.parent != null)
+            if(crate.transform.parent.CompareTag("Stand"))
+            {
+                crate.transform.parent.GetComponent<BoxCollider>().enabled = true;
+            }
+        
+        //zmiena hierarchii na scenie
+        crate.transform.SetParent(aboveHead.transform, false);
+        //zerowanie pozycji
+        crate.transform.localPosition = Vector3.zero;
+
+    }
+    void PutDownCrate()
+    {
+        //czy mamy skrzynkê
+        if(aboveHead.transform.childCount > 0)
+        {
+            GameObject crate = aboveHead.transform.GetChild(0).gameObject;
+            GameObject stand = getObjectInFront();
+            crate.transform.SetParent(stand.transform, false);
+            stand.gameObject.GetComponent<BoxCollider>().enabled = false;
+        }
+            
     }
     void OnMove(InputValue input)
     {
@@ -142,6 +164,18 @@ public class PlayerController : MonoBehaviour
         
         GameObject inFront = getObjectInFront();
         if(inFront != null)
-            PickUpCrate(inFront);
+        {
+            if(inFront.CompareTag("Crate"))
+            {
+                //przed nami skrzynka
+                PickUpCrate(inFront);
+            }
+            if(inFront.CompareTag("Stand"))
+            {
+                //przed nami paleta
+                PutDownCrate();
+            }
+        }
+            
     }
 }

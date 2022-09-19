@@ -5,6 +5,7 @@ TagManager:
   serializedVersion: 2
   tags:
   - Crate
+  - Stand
   layers:
   - Default
   - TransparentFX
