@@ -60,7 +60,8 @@ public class PlayerController : MonoBehaviour
             else if(movementVector.y < 0)
             {
                 //we moving back
-
+                if(getObjectInTheBack() == null)
+                    transform.position += transform.forward * movementVector.y;
             }
             
             
